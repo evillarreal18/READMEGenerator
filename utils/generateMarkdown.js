@@ -1,86 +1,192 @@
-// TODO: Create a function that returns a license badge based on which license is passed in
-// If there is no license, return an empty string
-function renderLicenseBadge(license) {
-  if (!license) {
-    return '';
-  };
 
-  const licenseBadges = {
-    'MIT': 'https://opensource.org/licenses/MIT',
-    'Apache 2.0': 'https://www.apache.org/licenses/LICENSE-2.0',
-    'Creative Commons Attribution 4.0 International': 'https://creativecommons.org/licenses/by/4.0/',
-    'Mozilla Public License 2.0': 'https://opensource.org/licenses/MPL-2.0'
-  };
-  
-  if (license in licenseBadges) {
-    return licenseBadges[license]; 
-  } else {
-    return '';
-  }
-
-}
-
-// TODO: Create a function that returns the license link
-// If there is no license, return an empty string
-function renderLicenseLink(license) {
-  const licenseURLs = {
-    'MIT': 'https://opensource.org/licenses/MIT',
-    'Apache 2.0': 'https://www.apache.org/licenses/LICENSE-2.0',
-    'Creative Commons Attribution 4.0 International': 'https://creativecommons.org/licenses/by/4.0/',
-    'Mozilla Public License 2.0': 'https://opensource.org/licenses/MPL-2.0'
-  };
-
-  if (license in licenseURLs) {
-    return `[![License](https://img.shields.io/badge/License-${license}-blue.svg)](${licenseURLs[license]})`;
-  } else {
-    return '';
-  }
-}
-
-// TODO: Create a function that returns the license section of README
-// If there is no license, return an empty string
-function renderLicenseSection(license) {
-  if(license !== "none") {
-    return `## License
-      
-        Licensed under the ${license} license.`;
-  } 
-  return "";
-}
-
-// TODO: Create a function to generate markdown for README
-function generateMarkdown(data) {
-  return `# ${data.title}
-by ${data.name}
-  ${renderLicenseBadge(data.license)}
-  ## Table of Contents:
-  * [Description](#description)
-  * [Installation](#installation)
-  * [Usage](#usage)
-  * [License](#license)
-  * [Contributors](#contributors)
-  * [Tests](#tests)
-${renderLicenseLink(data.license)}
-## Description:
-${data.description}
-## Installation:
-### You must install the following for this app to function:
-${data.installation}
-## Usage:
-${data.usage}
-## Contributors:
-${data.contributions}
-## Tests:
-### Run the following commands in your terminal to test this app:
-${data.tests}
-## Questions:
-### If you have any questions, you may contact me at either
-### Github: https://github.com/${data.github}
-or
-### Email: 
-${data.email}
-${renderLicenseSection(data.license)}
+const addLicenseBadge = license => {
+  if (license) {
+      return `![${license} License](https://img.shields.io/badge/license-${license.split(' ').join('%20')}-blue)
 `;
-}
+  } else {
+      return '';
+  }
+};
 
+const createDescription = (title, description, link) => {
+  if (link) {
+      return `${description}
+          
+View the deployed page at [${title}](${link}).`;
+  } else {
+      return `${description}`;
+  }
+};
+
+const createTableOfContents = contentsArr => {
+
+  let contentsList = '';
+  contentsArr.forEach((item) => {
+
+      if (item.content && item.header === 'Screenshots') {
+      contentsList += `   * [${item.header}](#${(item.header).toLowerCase()})
+`;
+      } else if (item.content) {
+          contentsList += `* [${item.header}](#${(item.header).toLowerCase().split(' ').join('-')})
+`;
+      }
+  });
+  return contentsList;
+};
+
+const createInstallation = install => {
+  if (install) {
+      return `To use this application, please install: 
+\`\`\`
+${install}
+\`\`\``
+  } else {
+      return '';
+  }
+};
+
+const createScreenshots = screenshotItem => {
+  let allScreenshots = '';
+  if (screenshotItem) {
+      screenshotItem.forEach(shot => {
+      allScreenshots += `![${shot.screenshotAlt}](${shot.screenshotLink})
+${shot.screenshotDesc}
+`;
+  });
+  return `${allScreenshots}`;
+  } else {
+      return '';
+  }
+};
+
+
+const createBuiltWith = builtWith =>{
+  let allTechnologies = '';
+
+  if (builtWith) {
+      builtWith.forEach(item => {
+          allTechnologies += `
+* ${item}`
+      });
+      return `${allTechnologies}`;
+  } else {
+      return '';
+  };
+};
+
+const createUsage = (usage, screenshots) => {
+  return `${usage} ${createScreenshots(screenshots)}`
+};
+
+const createLicense = license => {
+  if (license) {
+      return `This application is licensed under the ${license} license.`;
+  } else {
+      return '';
+  }
+};
+const createTest = test => {
+  if (test) {
+      return `To run tests on the application, install
+\`\`\`
+${test}
+\`\`\`
+and run \`npm run test\` from the command line.`
+  } else {
+      return '';
+  };
+};
+
+const createQuestions = (email, github, repo) => {
+  if (email) {
+      return `If you have any questions about the repo, please [open an issue](https://github.com/${github}/${repo}/issues) or contact me via email at ${email}. You can find more of my work on my GitHub, [${github}](https://github.com/${github}/).`
+  } else {
+      return '';
+  }
+};
+
+const createCredits = creditItem => {
+  let allCredits = '';
+  if (creditItem) {
+      creditItem.forEach((credit) => {
+      allCredits += `* [${credit.creditName}](${credit.creditLink})
+`;
+      });
+      return allCredits;
+  } else {
+      return '';
+  }
+};
+
+function generateMarkdown(data) {
+  const { title, github, repo, license } = data;
+  let readmeContents = '';
+  const sectionArr = [
+      {
+          header: 'Installation',
+          content: createInstallation(data.installation)
+      },
+      {
+          header: 'Usage',
+          content: createUsage(data.usage)
+      },
+      {
+          header: 'Screenshots',
+          content: createScreenshots(data.screenshots)
+      },
+      {
+          header: 'Built With',
+          content: createBuiltWith(data['built with'])
+      },
+      {
+          header: 'License',
+          content: createLicense(license)
+      },
+      {
+          header: 'Contributing', 
+          content: data.contributing 
+      },
+      {
+          header: 'Tests',
+          content: createTest(data.tests)
+      },
+      {
+          header: 'Questions',
+          content: createQuestions(data.questions, github, repo)
+      },
+      {
+          header: 'Credits',
+          content: createCredits(data.credits)
+      },
+  ];
+
+
+  sectionArr.forEach((sectionItem) => {
+      if (sectionItem.content && sectionItem.header === 'Screenshots') {
+          readmeContents += `### ${sectionItem.header}
+${sectionItem.content}
+`
+      } else if (sectionItem.content) {
+      readmeContents += `## ${sectionItem.header}
+${sectionItem.content}
+  
+`;
+      }
+  });
+  return `# ${title}
+[![Issues](https://img.shields.io/github/issues/${github}/${
+  repo
+})](https://github.com/${github}/${
+  repo
+}/issues) [![Issues](https://img.shields.io/github/contributors/${
+  github
+}/${repo})](https://github.com/${github}/${
+  repo
+}/graphs/contributors) ${addLicenseBadge(license)}
+## Description
+${createDescription(title, data.description, data.link)}
+## Contents
+${createTableOfContents(sectionArr)}
+${readmeContents}`;
+}
 module.exports = generateMarkdown;
